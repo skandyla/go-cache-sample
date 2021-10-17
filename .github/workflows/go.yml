@@ -29,3 +29,7 @@ jobs:
        cd example
        go build -v ./...
 
+    - name: Sample run
+      run: |
+       cd example
+       ./example
