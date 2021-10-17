@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -73,17 +74,44 @@ func TestGetSimpleTableSubTests(t *testing.T) {
 	}
 }
 
-func TestGetSimpleTableAssert(t *testing.T) {
-	assert := assert.New(t)
-	var cases = []struct {
+func TestGetSimpleTableSubTestsNames(t *testing.T) {
+	var tests = map[string]struct {
 		input string
 		want  interface{}
 	}{
-		{"id", 1},
-		{"nnn", "blabla"},
-		{"bool", false},
+		"getInt":    {input: "id", want: 1},
+		"getString": {input: "nnn", want: "blabla"},
+		"getBool":   {input: "bool", want: false},
 	}
-	for _, test := range cases {
-		assert.Equal(c.Get(test.input), test.want)
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := c.Get(tc.input)
+			//if !reflect.DeepEqual(tc.want, got) {
+			//	t.Fatalf("expected: %v, got: %v", tc.want, got)
+			//}
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
+
+func TestGetSimpleTableAssert(t *testing.T) {
+	assert := assert.New(t)
+	var tests = map[string]struct {
+		input string
+		want  interface{}
+	}{
+		"getInt":    {input: "id", want: 1},
+		"getString": {input: "nnn", want: "blabla"},
+		"getBool":   {input: "bool", want: false},
+	}
+	for name, test := range tests {
+		//assert.Equal(test.want, c.Get(test.input))
+		//convert to subtests
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(test.want, c.Get(test.input))
+		})
 	}
 }
