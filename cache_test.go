@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,6 +40,27 @@ func TestGetSimpleTable(t *testing.T) {
 		if got != want {
 			t.Errorf("got %q want %q", got, want)
 		}
+	}
+}
+
+func TestGetSimpleTableSubTests(t *testing.T) {
+	var cases = []struct {
+		input    string
+		expected interface{}
+	}{
+		{"id", 1},
+		{"nnn", "blabla"},
+		{"bool", false},
+	}
+	for _, test := range cases {
+		testname := fmt.Sprintf("%s,%v", test.input, test.expected)
+		t.Run(testname, func(t *testing.T) {
+			got := c.Get(test.input)
+			want := test.expected
+			if got != want {
+				t.Errorf("got %q want %q", got, want)
+			}
+		})
 	}
 }
 
