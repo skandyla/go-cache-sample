@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	cache "github.com/skandyla/go-cache-sample"
 )
@@ -9,17 +10,26 @@ import (
 func main() {
 	cache := cache.NewCache()
 
-	cache.Set("userId", 42)
-	cache.Set("otherId", 77)
+	err := cache.Set("userId", 42)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = cache.Set("otherId", 77)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	fmt.Printf("%+v\n", cache)
 
 	//It is good to separate your "domain" code from the outside world (side-effects). The fmt.Println is a side effect (printing to stdout) and the string we send in is our domain.
 	fmt.Println(getValue(cache, "userId"))
 	//fmt.Println(cache.Get("userId"))
-	//fmt.Println(cache.Get("otherId"))
 
-	cache.Delete("userId")
-	//fmt.Println(cache.Get("userId"))
+	err = cache.Delete("userId")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	fmt.Println(getValue(cache, "userId"))
 
 	fmt.Printf("%+v\n", cache)

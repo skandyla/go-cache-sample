@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"testing"
 
 	"github.com/skandyla/go-cache-sample"
@@ -9,7 +10,10 @@ import (
 
 func TestGetValue(t *testing.T) {
 	cache := cache.NewCache()
-	cache.Set("id", 1111)
+	err := cache.Set("id", 1111)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	got := getValue(cache, "id")
 	want := 1111
 	assert.Equal(t, want, got)
