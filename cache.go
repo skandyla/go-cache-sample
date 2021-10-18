@@ -4,16 +4,19 @@ type Cache struct {
 	items map[string]interface{}
 }
 
-func (c *Cache) Set(key string, value interface{}) {
-	c.items[key] = value
-}
-
 func (c *Cache) Get(key string) interface{} {
 	return c.items[key]
 }
 
-func (c *Cache) Delete(key string) {
+func (c *Cache) Set(key string, value interface{}) error {
+	c.items[key] = value
+	// not sure is it a right way to handle errors for methods ?
+	return nil
+}
+
+func (c *Cache) Delete(key string) error {
 	delete(c.items, key)
+	return nil
 }
 
 func NewCache() *Cache {

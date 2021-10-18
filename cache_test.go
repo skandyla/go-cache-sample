@@ -115,3 +115,50 @@ func TestGetSimpleTableAssert(t *testing.T) {
 		})
 	}
 }
+
+/// tests for Set
+type setInput struct {
+	key   string
+	value interface{}
+}
+
+func TestSet(t *testing.T) {
+	var tests = map[string]struct {
+		input *setInput
+		want  interface{} //want nil
+	}{
+		"setInt":    {input: &setInput{key: "id", value: 111}, want: nil},
+		"setString": {input: &setInput{key: "idstr", value: "string"}, want: nil},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := c.Set(tc.input.key, tc.input.value)
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
+
+// Delete
+func TestDelete(t *testing.T) {
+	c = NewCache()
+	c.items["id"] = 111
+
+	var tests = map[string]struct {
+		input *setInput
+		want  interface{} // want nil
+	}{
+		"setInt": {input: &setInput{key: "id", value: 111}, want: nil},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			got := c.Delete(tc.input.key)
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Fatalf(diff)
+			}
+		})
+	}
+}
