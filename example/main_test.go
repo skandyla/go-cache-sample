@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"testing"
 	"time"
 
@@ -10,11 +9,8 @@ import (
 )
 
 func TestGetValue(t *testing.T) {
-	cache := cache.NewCache()
-	err := cache.Set("id", 1111, time.Second)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	cache := cache.New()
+	cache.Set("id", 1111, time.Second)
 	got, _ := getValue(cache, "id")
 	want := 1111
 	assert.Equal(t, want, got)

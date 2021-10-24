@@ -73,7 +73,7 @@ import (
 //}
 
 func TestGetSimpleTableSubTestsNames(t *testing.T) {
-	c := NewCache()
+	c := New()
 	c.items["id"] = Item{1, time.Second * 2}
 	c.items["nnn"] = Item{"blabla", time.Second * 3}
 	c.items["bool"] = Item{false, time.Second * 4}
@@ -101,7 +101,7 @@ func TestGetSimpleTableSubTestsNames(t *testing.T) {
 }
 
 func TestGetSimpleTableAssert(t *testing.T) {
-	c := NewCache()
+	c := New()
 	c.items["id"] = Item{1, time.Second * 2}
 	c.items["nnn"] = Item{"blabla", time.Second * 3}
 	c.items["bool"] = Item{false, time.Second * 4}
