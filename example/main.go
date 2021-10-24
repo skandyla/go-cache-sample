@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	cache "github.com/skandyla/go-cache-sample"
 )
@@ -10,11 +11,11 @@ import (
 func main() {
 	cache := cache.NewCache()
 
-	err := cache.Set("userId", 42)
+	err := cache.Set("userId", 42, time.Second*5)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = cache.Set("otherId", 77)
+	err = cache.Set("otherId", 77, time.Second*7)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -35,6 +36,11 @@ func main() {
 	fmt.Printf("%+v\n", cache)
 }
 
-func getValue(cache *cache.Cache, key string) interface{} {
-	return cache.Get(key)
+func getValue(cache *cache.Cache, key string) (interface{}, error) {
+	v, err := cache.Get(key)
+	if err != nil {
+		fmt.Printf("Got err:%v\n", err)
+		return nil, err
+	}
+	return v, nil
 }
