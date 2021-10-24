@@ -15,5 +15,5 @@ test:
 	go test -race ./...
 
 cover:
-	go test -coverprofile=/tmp/c.out
+	go test -v ./... -coverprofile=/tmp/c.out
 	go tool cover -func=/tmp/c.out
