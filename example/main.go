@@ -25,6 +25,12 @@ func main() {
 	cache.Delete("otherId") //test again
 
 	fmt.Println(getValue(cache, "otherId")) //<nil> item not exist
+
+	//cache closing case
+	cache.Set("userId", 33, time.Second*2)
+	fmt.Println(getValue(cache, "userId")) //33 <nil>
+	cache.Close()                          // immidiately cause all cache expired
+	fmt.Println(getValue(cache, "userId")) //<nil> item not exist
 }
 
 //It is good to separate your "domain" code from the outside world (side-effects). The fmt.Println is a side effect (printing to stdout) and the string we send in is our domain.

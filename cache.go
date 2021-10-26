@@ -76,7 +76,7 @@ func New() *Cache {
 }
 
 // Stop cache goroutine
-func Stop(c *Cache) error {
+func (c *Cache) Close() error {
 	c.close <- true
 	return nil
 }
