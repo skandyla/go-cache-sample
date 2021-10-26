@@ -2,39 +2,43 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"time"
 
 	cache "github.com/skandyla/go-cache-sample"
 )
 
 func main() {
-	cache := cache.NewCache()
+	cache := cache.New()
 
-	err := cache.Set("userId", 42)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = cache.Set("otherId", 77)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	cache.Set("userId", 42, time.Second*5)
+	fmt.Println(getValue(cache, "userId")) //42 <nil>
 
-	fmt.Printf("%+v\n", cache)
+	cache.Set("otherId", 77, time.Second*7)
+	fmt.Println(getValue(cache, "otherId")) //77 <nil>
 
-	//It is good to separate your "domain" code from the outside world (side-effects). The fmt.Println is a side effect (printing to stdout) and the string we send in is our domain.
-	fmt.Println(getValue(cache, "userId"))
-	//fmt.Println(cache.Get("userId"))
+	//verify results after 6 seconds
+	time.Sleep(time.Second * 6)
+	fmt.Println(getValue(cache, "userId"))  //<nil> item not exist
+	fmt.Println(getValue(cache, "otherId")) //77 <nil>
 
-	err = cache.Delete("userId")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	cache.Delete("otherId")
+	cache.Delete("otherId") //test again
 
-	fmt.Println(getValue(cache, "userId"))
+	fmt.Println(getValue(cache, "otherId")) //<nil> item not exist
 
-	fmt.Printf("%+v\n", cache)
+	//cache closing case
+	cache.Set("userId", 33, time.Second*2)
+	fmt.Println(getValue(cache, "userId")) //33 <nil>
+	cache.Close()                          // immidiately cause all cache expired
+	fmt.Println(getValue(cache, "userId")) //<nil> item not exist
 }
 
-func getValue(cache *cache.Cache, key string) interface{} {
-	return cache.Get(key)
+//It is good to separate your "domain" code from the outside world (side-effects). The fmt.Println is a side effect (printing to stdout) and the string we send in is our domain.
+func getValue(cache *cache.Cache, key string) (interface{}, error) {
+	v, err := cache.Get(key)
+	if err != nil {
+		//fmt.Printf("Got err:%v\n", err) //side effect
+		return nil, err
+	}
+	return v, nil
 }

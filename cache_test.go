@@ -1,80 +1,20 @@
 package cache
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
-var c *Cache
+//TestGet - ensure Get method is working
+func TestGet(t *testing.T) {
+	c := New()
+	c.items["id"] = Item{1, time.Second * 2}
+	c.items["nnn"] = Item{"blabla", time.Second * 3}
+	c.items["bool"] = Item{false, time.Second * 4}
 
-func init() {
-	c = NewCache()
-	c.items["id"] = 1
-	c.items["nnn"] = "blabla"
-	c.items["bool"] = false
-
-}
-
-func TestGetSimple(t *testing.T) {
-	got := c.Get("id")
-	want := 1
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
-}
-
-func TestGetSimpleReflect(t *testing.T) {
-	got := c.Get("id")
-	want := 1
-	if !reflect.DeepEqual(want, got) {
-		t.Fatalf("expected: %v, got: %v", want, got)
-	}
-}
-
-func TestGetSimpleTable(t *testing.T) {
-	var cases = []struct {
-		input string
-		want  interface{}
-	}{
-		{"id", 1},
-		{"nnn", "blabla"},
-		{"bool", false},
-	}
-	for _, test := range cases {
-		got := c.Get(test.input)
-		want := test.want
-		if got != want {
-			t.Errorf("got %q want %q", got, want)
-		}
-	}
-}
-
-func TestGetSimpleTableSubTests(t *testing.T) {
-	var cases = []struct {
-		input string
-		want  interface{}
-	}{
-		{"id", 1},
-		{"nnn", "blabla"},
-		{"bool", false},
-	}
-	for _, test := range cases {
-		testname := fmt.Sprintf("%s,%v", test.input, test.want)
-		t.Run(testname, func(t *testing.T) {
-			got := c.Get(test.input)
-			want := test.want
-			if got != want {
-				t.Errorf("got %q want %q", got, want)
-			}
-		})
-	}
-}
-
-func TestGetSimpleTableSubTestsNames(t *testing.T) {
 	var tests = map[string]struct {
 		input string
 		want  interface{}
@@ -85,10 +25,7 @@ func TestGetSimpleTableSubTestsNames(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			got := c.Get(tc.input)
-			//if !reflect.DeepEqual(tc.want, got) {
-			//	t.Fatalf("expected: %v, got: %v", tc.want, got)
-			//}
+			got, _ := c.Get(tc.input)
 			diff := cmp.Diff(tc.want, got)
 			if diff != "" {
 				t.Fatalf(diff)
@@ -97,7 +34,13 @@ func TestGetSimpleTableSubTestsNames(t *testing.T) {
 	}
 }
 
-func TestGetSimpleTableAssert(t *testing.T) {
+//TestGetAssert - ensure Get method is working
+func TestGetAssert(t *testing.T) {
+	c := New()
+	c.items["id"] = Item{1, time.Second * 2}
+	c.items["nnn"] = Item{"blabla", time.Second * 3}
+	c.items["bool"] = Item{false, time.Second * 4}
+
 	assert := assert.New(t)
 	var tests = map[string]struct {
 		input string
@@ -110,55 +53,74 @@ func TestGetSimpleTableAssert(t *testing.T) {
 	for name, test := range tests {
 		//assert.Equal(test.want, c.Get(test.input))
 		//convert to subtests
+		got, _ := c.Get(test.input)
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(test.want, c.Get(test.input))
+			assert.Equal(test.want, got)
 		})
 	}
 }
 
-/// tests for Set
-type setInput struct {
-	key   string
-	value interface{}
-}
-
+//TestSet - ensure Set method is working
 func TestSet(t *testing.T) {
+	c := New()
+	assert := assert.New(t)
 	var tests = map[string]struct {
-		input *setInput
-		want  interface{} //want nil
+		input string
+		want  interface{}
+		ttl   time.Duration
 	}{
-		"setInt":    {input: &setInput{key: "id", value: 111}, want: nil},
-		"setString": {input: &setInput{key: "idstr", value: "string"}, want: nil},
+		"getInt":    {input: "id", want: 1, ttl: time.Second * 2},
+		"getString": {input: "nnn", want: "blabla", ttl: time.Second * 3},
 	}
+
+	//fill cache with our testing function.
+	for _, tc := range tests {
+		//c.items[tc.input] = Item{tc.want, tc.ttl}
+		c.Set(tc.input, tc.want, tc.ttl) //the same as above but via method we test
+	}
+
+	//verify
 	for name, tc := range tests {
+		got, _ := c.Get(tc.input)
 		t.Run(name, func(t *testing.T) {
-			got := c.Set(tc.input.key, tc.input.value)
-			diff := cmp.Diff(tc.want, got)
-			if diff != "" {
-				t.Fatalf(diff)
-			}
+			assert.Equal(tc.want, got)
 		})
 	}
 }
 
-// Delete
+//TestDelete - ensure Delete method is working
 func TestDelete(t *testing.T) {
-	c = NewCache()
-	c.items["id"] = 111
-
+	c := New()
+	assert := assert.New(t)
 	var tests = map[string]struct {
-		input *setInput
-		want  interface{} // want nil
+		input     string        //Item.name
+		value     interface{}   //Item.value
+		ttl       time.Duration //Item.ttl
+		want      interface{}   //what we want in test
+		isDeleted bool          //is item deleted ?
 	}{
-		"setInt": {input: &setInput{key: "id", value: 111}, want: nil},
+		"Int":    {input: "id", value: 1, ttl: time.Second * 2, want: nil, isDeleted: true},
+		"String": {input: "nnn", value: "blabla", ttl: time.Second * 3, want: "blabla", isDeleted: false},
 	}
+
+	//fill
+	for _, tc := range tests {
+		c.Set(tc.input, tc.value, tc.ttl)
+	}
+
+	//delete
+	for _, tc := range tests {
+		if tc.isDeleted {
+			c.Delete(tc.input)
+		}
+	}
+
+	//verify
+	//TBD: handle error responses
 	for name, tc := range tests {
+		got, _ := c.Get(tc.input)
 		t.Run(name, func(t *testing.T) {
-			got := c.Delete(tc.input.key)
-			diff := cmp.Diff(tc.want, got)
-			if diff != "" {
-				t.Fatalf(diff)
-			}
+			assert.Equal(tc.want, got)
 		})
 	}
 }
