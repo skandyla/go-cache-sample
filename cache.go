@@ -36,7 +36,9 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 
 // Delete - delete item from cache
 func (c *Cache) Delete(key string) {
+	c.mu.Lock()
 	delete(c.items, key)
+	c.mu.Unlock()
 }
 
 // New - return new Cache object
